@@ -2,7 +2,7 @@
 /*
 Plugin Name: qkt-randevu
 Description: Randevu alma sistemi
-Version: 2.5
+Version: 2.8
 Author: akltq00
 */
 
