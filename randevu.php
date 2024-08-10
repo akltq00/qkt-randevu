@@ -6,6 +6,7 @@ Version: 2.8
 Author: akltq00
 */
 
+
 function appointment_booking_install() {
     global $wpdb;
     $table_name = $wpdb->prefix . 'appointments';
@@ -100,7 +101,7 @@ function appointment_booking_shortcode() {
         <label for="appointment_date">Randevu Tarihi (gg.aa.yyyy):</label>
         <input type="text" id="appointment_date" name="appointment_date" placeholder="gg.aa.yyyy" required pattern="\d{2}\.\d{2}\.\d{4}">
 
-        <label for="appointment_time">Randevu Saati:</label>
+        <label for="appointment_time">Randevu Saati (24 Saat Formatında):</label>
         <input type="time" id="appointment_time" name="appointment_time" required>
 
         <input type="submit" name="submit_appointment" value="Randevu Al">
@@ -167,7 +168,7 @@ function appointment_booking_admin_page() {
             echo '<td>' . esc_html($row->phone) . '</td>';
             echo '<td>' . esc_html($row->class_level) . '</td>';
             echo '<td>' . esc_html(date('d.m.Y', strtotime($row->appointment_date))) . '</td>';
-            echo '<td>' . esc_html($row->appointment_time) . '</td>';
+            echo '<td>' . esc_html(date('H:i', strtotime($row->appointment_time))) . '</td>';
             echo '</tr>';
         }
         echo '</tbody></table>';
