@@ -2,7 +2,7 @@
 /*
 Plugin Name: qkt-randevu
 Description: Randevu alma sistemi
-Version: 1.0
+Version: 2.5
 Author: akltq00
 */
 
@@ -14,8 +14,10 @@ function appointment_booking_install() {
 
     $sql = "CREATE TABLE $table_name (
         id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255),
-        surname VARCHAR(255),
+        parent_name VARCHAR(255),
+        parent_surname VARCHAR(255),
+        student_name VARCHAR(255),
+        student_surname VARCHAR(255),
         phone VARCHAR(15),
         class_level VARCHAR(20),
         appointment_date DATE,
@@ -27,54 +29,108 @@ function appointment_booking_install() {
 }
 register_activation_hook(__FILE__, 'appointment_booking_install');
 
-function qkt_randevusistemi() {
+function appointment_booking_shortcode() {
     ob_start();
     ?>
-    <form method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
-        <label for="name">İsim:</label>
-        <input type="text" id="name" name="name" required><br>
+    <style>
+        .appointment-form {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .appointment-form h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .appointment-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .appointment-form input,
+        .appointment-form select {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .appointment-form input[type="submit"] {
+            width: 100%;
+            background-color: #0073aa;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 15px;
+            font-size: 16px;
+        }
+        .appointment-form input[type="submit"]:hover {
+            background-color: #005177;
+        }
+    </style>
+    <form class="appointment-form" method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
+        <h2>Randevu Al</h2>
+        <label for="parent_name">Veli İsim:</label>
+        <input type="text" id="parent_name" name="parent_name" required>
 
-        <label for="surname">Soyisim:</label>
-        <input type="text" id="surname" name="surname" required><br>
+        <label for="parent_surname">Veli Soyisim:</label>
+        <input type="text" id="parent_surname" name="parent_surname" required>
+
+        <label for="student_name">Öğrenci İsim:</label>
+        <input type="text" id="student_name" name="student_name" required>
+
+        <label for="student_surname">Öğrenci Soyisim:</label>
+        <input type="text" id="student_surname" name="student_surname" required>
 
         <label for="phone">Telefon Numarası:</label>
-        <input type="text" id="phone" name="phone" required><br>
+        <input type="text" id="phone" name="phone" required>
 
         <label for="class_level">Sınıf Seviyesi:</label>
         <select id="class_level" name="class_level">
             <?php for ($i = 4; $i <= 12; $i++) {
                 echo "<option value='{$i}. Sınıf'>{$i}. Sınıf</option>";
             } ?>
-        </select><br>
+        </select>
 
-        <label for="appointment_date">Randevu Tarihi:</label>
-        <input type="date" id="appointment_date" name="appointment_date" required><br>
+        <label for="appointment_date">Randevu Tarihi (gg.aa.yyyy):</label>
+        <input type="text" id="appointment_date" name="appointment_date" placeholder="gg.aa.yyyy" required pattern="\d{2}\.\d{2}\.\d{4}">
 
         <label for="appointment_time">Randevu Saati:</label>
-        <input type="time" id="appointment_time" name="appointment_time" required><br>
+        <input type="time" id="appointment_time" name="appointment_time" required>
 
         <input type="submit" name="submit_appointment" value="Randevu Al">
     </form>
     <?php
     return ob_get_clean();
 }
-add_shortcode('qkt-randevu', 'qkt_randevusistemi');
+add_shortcode('qkt-randevu', 'appointment_booking_shortcode');
 
 function handle_appointment_submission() {
     if (isset($_POST['submit_appointment'])) {
         global $wpdb;
         $table_name = $wpdb->prefix . 'appointments';
 
-        $name = sanitize_text_field($_POST['name']);
-        $surname = sanitize_text_field($_POST['surname']);
+        $parent_name = sanitize_text_field($_POST['parent_name']);
+        $parent_surname = sanitize_text_field($_POST['parent_surname']);
+        $student_name = sanitize_text_field($_POST['student_name']);
+        $student_surname = sanitize_text_field($_POST['student_surname']);
         $phone = sanitize_text_field($_POST['phone']);
         $class_level = sanitize_text_field($_POST['class_level']);
-        $appointment_date = sanitize_text_field($_POST['appointment_date']);
+        $appointment_date_raw = sanitize_text_field($_POST['appointment_date']);
         $appointment_time = sanitize_text_field($_POST['appointment_time']);
 
+        $appointment_date = DateTime::createFromFormat('d.m.Y', $appointment_date_raw)->format('Y-m-d');
+
         $wpdb->insert($table_name, array(
-            'name' => $name,
-            'surname' => $surname,
+            'parent_name' => $parent_name,
+            'parent_surname' => $parent_surname,
+            'student_name' => $student_name,
+            'student_surname' => $student_surname,
             'phone' => $phone,
             'class_level' => $class_level,
             'appointment_date' => $appointment_date,
@@ -100,15 +156,17 @@ function appointment_booking_admin_page() {
     echo '<h1>Randevu Listesi</h1>';
     if ($results) {
         echo '<table class="wp-list-table widefat fixed striped">';
-        echo '<thead><tr><th>İsim</th><th>Soyisim</th><th>Telefon</th><th>Sınıf Seviyesi</th><th>Randevu Tarihi</th><th>Randevu Saati</th></tr></thead>';
+        echo '<thead><tr><th>Veli İsim</th><th>Veli Soyisim</th><th>Öğrenci İsim</th><th>Öğrenci Soyisim</th><th>Telefon</th><th>Sınıf Seviyesi</th><th>Randevu Tarihi</th><th>Randevu Saati</th></tr></thead>';
         echo '<tbody>';
         foreach ($results as $row) {
             echo '<tr>';
-            echo '<td>' . esc_html($row->name) . '</td>';
-            echo '<td>' . esc_html($row->surname) . '</td>';
+            echo '<td>' . esc_html($row->parent_name) . '</td>';
+            echo '<td>' . esc_html($row->parent_surname) . '</td>';
+            echo '<td>' . esc_html($row->student_name) . '</td>';
+            echo '<td>' . esc_html($row->student_surname) . '</td>';
             echo '<td>' . esc_html($row->phone) . '</td>';
             echo '<td>' . esc_html($row->class_level) . '</td>';
-            echo '<td>' . esc_html($row->appointment_date) . '</td>';
+            echo '<td>' . esc_html(date('d.m.Y', strtotime($row->appointment_date))) . '</td>';
             echo '<td>' . esc_html($row->appointment_time) . '</td>';
             echo '</tr>';
         }
@@ -139,7 +197,7 @@ function appointment_booking_settings_page() {
         $checked = in_array($role_key, $roles) ? 'checked' : '';
         echo '<p><label><input type="checkbox" name="appointment_booking_roles[]" value="' . esc_attr($role_key) . '" ' . $checked . '> ' . esc_html($role_name) . '</label></p>';
     }
-    echo '<p><input type="submit" value="Kaydet" class="button button-primary"></p>';
+    echo '<p><input type="submit" class="button button-primary" value="Kaydet"></p>';
     echo '</form>';
 }
 ?>
