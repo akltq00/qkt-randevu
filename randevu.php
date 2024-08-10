@@ -98,10 +98,10 @@ function appointment_booking_shortcode() {
             } ?>
         </select>
 
-        <label for="appointment_date">Randevu Tarihi (gg.aa.yyyy):</label>
-        <input type="text" id="appointment_date" name="appointment_date" placeholder="gg.aa.yyyy" required pattern="\d{2}\.\d{2}\.\d{4}">
+        <label for="appointment_date">Randevu Tarihi:</label>
+        <input type="date" id="appointment_date" name="appointment_date" required>
 
-        <label for="appointment_time">Randevu Saati (24 Saat Formatında):</label>
+        <label for="appointment_time">Randevu Saati:</label>
         <input type="time" id="appointment_time" name="appointment_time" required>
 
         <input type="submit" name="submit_appointment" value="Randevu Al">
@@ -122,10 +122,8 @@ function handle_appointment_submission() {
         $student_surname = sanitize_text_field($_POST['student_surname']);
         $phone = sanitize_text_field($_POST['phone']);
         $class_level = sanitize_text_field($_POST['class_level']);
-        $appointment_date_raw = sanitize_text_field($_POST['appointment_date']);
+        $appointment_date = sanitize_text_field($_POST['appointment_date']);
         $appointment_time = sanitize_text_field($_POST['appointment_time']);
-
-        $appointment_date = DateTime::createFromFormat('d.m.Y', $appointment_date_raw)->format('Y-m-d');
 
         $wpdb->insert($table_name, array(
             'parent_name' => $parent_name,
