@@ -27,7 +27,7 @@ function appointment_booking_install() {
 }
 register_activation_hook(__FILE__, 'appointment_booking_install');
 
-function appointment_booking_shortcode() {
+function qkt_randevusistemi() {
     ob_start();
     ?>
     <form method="post" action="<?php echo esc_url($_SERVER['REQUEST_URI']); ?>">
@@ -58,7 +58,7 @@ function appointment_booking_shortcode() {
     <?php
     return ob_get_clean();
 }
-add_shortcode('qkt-randevu', 'qkt-randevusistemi');
+add_shortcode('qkt-randevu', 'qkt_randevusistemi');
 
 function handle_appointment_submission() {
     if (isset($_POST['submit_appointment'])) {
