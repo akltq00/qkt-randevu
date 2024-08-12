@@ -99,10 +99,10 @@ function appointment_booking_shortcode() {
         </select>
 
         <label for="appointment_date">Randevu Tarihi:</label>
-        <input type="date" id="appointment_date" name="appointment_date" required>
+        <input type="date" id="appointment_date" name="appointment_date" required> // FIXME: Türkçe takvim
 
         <label for="appointment_time">Randevu Saati:</label>
-        <input type="time" id="appointment_time" name="appointment_time" required>
+        <input type="time" id="appointment_time" name="appointment_time" required> // FIXME: 24 Saatlik zaman dilimi saat seçme
 
         <input type="submit" name="submit_appointment" value="Randevu Al">
     </form>
